@@ -1,5 +1,6 @@
 package Controller
 
+import Services.AuthService
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -64,6 +65,11 @@ class CreateUserActivity : AppCompatActivity() {
 
   fun createUserClicked(view: View)
   {
+     AuthService.registerUser(this,"stephan111@gmail.com","s3456"){complete->
+         if(complete){
 
+
+         }
+     }
   }
 }
