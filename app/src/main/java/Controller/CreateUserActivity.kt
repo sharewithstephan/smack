@@ -38,15 +38,12 @@ class CreateUserActivity : AppCompatActivity() {
       val resourseid= resources.getIdentifier(userAvatar,"drawable",packageName)
       createAvatarImageView.setImageResource(resourseid)
 
-
-
-
-
   }
 
   fun generateColourClicked(view: View)
   {
-     val random=Random()
+
+      val random=Random()
       val r= random.nextInt(255)
       val g= random.nextInt(255)
       val b= random.nextInt(255)
@@ -65,9 +62,20 @@ class CreateUserActivity : AppCompatActivity() {
 
   fun createUserClicked(view: View)
   {
-     AuthService.registerUser(this,"stephan111@gmail.com","s3456"){complete->
-         if(complete){
+      val email=createEmailtext.text.toString()
+      val password= createPasswordText.text.toString()
 
+
+     AuthService.registerUser(this,email,password){registersuccess->
+         if(registersuccess){
+             AuthService.loginUser(this,email,password){loginsuccess ->
+                 if(loginsuccess){
+                     println(AuthService.authToken)
+                     println(AuthService.userEmail)
+
+                 }
+
+             }
 
          }
      }
