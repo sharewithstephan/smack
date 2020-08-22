@@ -1,6 +1,7 @@
 package Controller
 
 import Services.AuthService
+import Services.UserDataService
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -64,14 +65,22 @@ class CreateUserActivity : AppCompatActivity() {
   {
       val email=createEmailtext.text.toString()
       val password= createPasswordText.text.toString()
+      val userName= createUserNameTxt.text.toString()
 
 
      AuthService.registerUser(this,email,password){registersuccess->
          if(registersuccess){
              AuthService.loginUser(this,email,password){loginsuccess ->
                  if(loginsuccess){
-                     println(AuthService.authToken)
-                     println(AuthService.userEmail)
+                    AuthService.createUser(this,userName,email,userAvatar,avatarColour){createSuccess->
+                        if(createSuccess)
+                        {   println(UserDataService.avatarName)
+                            println(UserDataService.avatarColor)
+                            println(UserDataService.name)
+                            finish()
+                        }
+
+                    }
 
                  }
 
