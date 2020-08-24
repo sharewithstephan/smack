@@ -35,8 +35,8 @@
 
     <TextView
         android:id="@+id/userEmailNavHeader"
-        android:layout_width="198dp"
-        android:layout_height="28dp"
+        android:layout_width="204dp"
+        android:layout_height="36dp"
         android:layout_marginStart="8dp"
         android:text="sharewithstephan@gmail.com"
         app:layout_constraintStart_toEndOf="@+id/userImageNavHeader"
