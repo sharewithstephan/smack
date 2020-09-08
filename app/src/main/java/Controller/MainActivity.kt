@@ -1,8 +1,11 @@
 package Controller
 
+import Model.Channel
 import Services.AuthService
+import Services.MessageService
 import Services.UserDataService
 import Utilities.BROADCAST_USER_DATA_CHANGE
+import Utilities.SOCKET_URL
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -24,9 +27,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.smackthat.R
+import io.socket.client.IO
+import io.socket.emitter.Emitter
 import kotlinx.android.synthetic.main.nav_header_main.*
 
 class MainActivity : AppCompatActivity() {
+
+    val socket= IO.socket(SOCKET_URL)
 
     private lateinit var appBarConfiguration: AppBarConfiguration
 
@@ -36,9 +43,12 @@ class MainActivity : AppCompatActivity() {
         val toolbar: Toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
 
+        socket.connect()
+        socket.on("channelCreated",onNewChannel)
+
       //  val fab: FloatingActionButton = findViewById(R.id.fab)
 
-        hideKeyboard()
+        //hideKeyboard()
 
 //        fab.setOnClickListener { view ->
 //            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
@@ -57,10 +67,35 @@ class MainActivity : AppCompatActivity() {
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
 
+
+
+
+
+
+    }
+
+
+    override fun onResume() {
+
+
         LocalBroadcastManager.getInstance(this).registerReceiver(userDataChangeReceiver, IntentFilter(BROADCAST_USER_DATA_CHANGE))
+//        socket.connect()
+//        socket.on("channelCreated",onNewChannel)
+        super.onResume()
 
+    }
 
+//    override fun onPause() {
+//
+//
+//
+//        super.onPause()
+//    }
 
+    override fun onDestroy() {
+        socket.disconnect()
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(userDataChangeReceiver)
+        super.onDestroy()
 
     }
 
@@ -131,11 +166,12 @@ class MainActivity : AppCompatActivity() {
                     val channelDesc= descTextField.text.toString()
 
                     //Create channel with channel name and description
-                    hideKeyboard()
+                    socket.emit("newChannel",channelName,channelDesc)
+                    //hideKeyboard()
                 }
                 .setNegativeButton("Cancel"){ dialogInterface, i ->
                     //Cancel and close the dialog
-                    hideKeyboard()
+                   // hideKeyboard()
                 }
                 .show()
 
@@ -144,8 +180,27 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    private val onNewChannel= Emitter.Listener { args ->
+
+        runOnUiThread { // switching to UI thread from worker thread
+            val channelName= args[0] as String
+            val channelDescription= args[1] as String
+            val channelId= args[2] as String
+
+            val newChannel= Channel(channelName,channelDescription,channelId)
+            MessageService.channels.add(newChannel)
+            println(newChannel.name)
+            println(newChannel.description)
+            println(newChannel.id)
+
+        }
+    }
+
+
+
     fun sendMsgBtnClicked(view: View)
     {
+        hideKeyboard()
 
     }
 
