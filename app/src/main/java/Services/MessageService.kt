@@ -1,5 +1,6 @@
 package Services
 
+import Controller.App
 import Model.Channel
 import Utilities.URL_GET_CHANNELS
 import android.content.Context
@@ -49,12 +50,12 @@ object MessageService {
 
             override fun getHeaders(): MutableMap<String, String> {
                 val headers= HashMap<String,String>()  //key,value api
-                headers.put("Authorization","Bearer ${AuthService.authToken}")
+                headers.put("Authorization","Bearer ${App.prefs.authToken}")
                 return headers
             }
 
         }
-        Volley.newRequestQueue(context).add(channelsRequest)
+        App.prefs.requestQueue.add(channelsRequest)
 
     }
 
