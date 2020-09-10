@@ -1,5 +1,6 @@
 package Controller
 
+import Adapters.MessageAdapter
 import Model.Channel
 import Model.Message
 import Services.AuthService
@@ -29,6 +30,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.smackthat.R
 import io.socket.client.IO
 import io.socket.emitter.Emitter
@@ -40,11 +42,19 @@ class MainActivity : AppCompatActivity() {
 
     val socket= IO.socket(SOCKET_URL)
     lateinit var channelAdapter: ArrayAdapter<Channel>
+    lateinit var messageAdapter: MessageAdapter
     var selectedChannel: Channel?= null
 
     private fun setupAdapters(){
         channelAdapter= ArrayAdapter(this, android.R.layout.simple_list_item_1,MessageService.channels)
         channel_list.adapter= channelAdapter
+
+        messageAdapter= MessageAdapter(this, MessageService.messages)
+        messageListView.adapter= messageAdapter
+
+        val layoutManager= LinearLayoutManager(this)
+        messageListView.layoutManager= layoutManager
+
     }
 
 
@@ -167,8 +177,11 @@ class MainActivity : AppCompatActivity() {
         if(selectedChannel!=null){
             MessageService.getMessages(selectedChannel!!.id){complete->
                 if(complete){
-                    for( message in MessageService.messages){
-                        println(message.message)
+                   messageAdapter.notifyDataSetChanged()
+                    if(messageAdapter.itemCount>0){
+                        // for scrolling down to latest msgs
+                        messageListView.smoothScrollToPosition(messageAdapter.itemCount-1)
+
                     }
                 }
 
@@ -198,6 +211,9 @@ class MainActivity : AppCompatActivity() {
 
             UserDataService.logout()
            // userNameNavHeader.text= "Login"
+            channelAdapter.notifyDataSetChanged()
+            messageAdapter.notifyDataSetChanged()
+
             userEmailNavHeader.text= ""
             userImageNavHeader.setImageResource(R.drawable.profiledefault)
             userImageNavHeader.setBackgroundColor(Color.TRANSPARENT)
@@ -289,7 +305,9 @@ class MainActivity : AppCompatActivity() {
                         timeStamp
                     )
                     MessageService.messages.add(newMessage)
-                    println(newMessage.message)
+                    messageAdapter.notifyDataSetChanged()
+
+                    messageListView.smoothScrollToPosition(messageAdapter.itemCount-1)
 
 
                 }
