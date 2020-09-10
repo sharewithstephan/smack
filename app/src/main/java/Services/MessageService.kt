@@ -4,6 +4,7 @@ import Controller.App
 import Model.Channel
 import Model.Message
 import Utilities.URL_GET_CHANNELS
+import Utilities.URL_GET_MESSAGES
 import android.content.Context
 import android.util.Log
 import com.android.volley.Response
@@ -56,9 +57,89 @@ object MessageService {
                 return headers
             }
 
+
         }
         App.prefs.requestQueue.add(channelsRequest)
 
     }
+
+
+    fun getMessages(channelId: String, complete: (Boolean) -> Unit){
+        val url= "$URL_GET_MESSAGES$channelId"
+
+        val messageRequest= object : JsonArrayRequest (Method.GET, url, null, Response.Listener { response ->
+               clearMessages()
+            try {
+
+                for(x in 0 until response.length()){
+                    val message= response.getJSONObject(x)
+
+                    val messageBody= message.getString("messageBody")
+                    val channelId= message.getString("channelId")
+                    val id= message.getString("_id")
+                    val userName= message.getString("userName")
+                    val userAvatar= message.getString("userAvatar")
+                    val userAvatarColor= message.getString("userAvatarColor")
+                    val timeStamp= message.getString("timeStamp")
+
+                    val newMessage= Message(messageBody, userName, channelId, userAvatar, userAvatarColor, id, timeStamp)
+                    this.messages.add(newMessage)
+                }
+                complete(true)
+
+            } catch (e: JSONException){
+                Log.d("JSON","EXC:" + e.localizedMessage)
+                complete(false)
+
+            }
+        },Response.ErrorListener { error ->
+            Log.d("ERROR","Could not read Channels1")
+            complete(false)
+
+        }){
+            override fun getBodyContentType(): String {
+                return "application/json; charset=utf-8"   //tells type of encoding
+            }
+
+            override fun getHeaders(): MutableMap<String, String> {
+                val headers= HashMap<String,String>()  //key,value api
+                headers.put("Authorization","Bearer ${App.prefs.authToken}")
+                return headers
+            }
+
+        }
+
+
+        App.prefs.requestQueue.add(messageRequest)
+
+    }
+
+
+    fun clearMessages(){
+        messages.clear()
+    }
+
+    fun clearChannels(){
+        channels.clear()
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 }
